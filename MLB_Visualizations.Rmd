@@ -1,0 +1,84 @@
+---
+title: "MLB_Visualizations"
+output: html_document
+date: "2024-02-27"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(readr)
+library(tidyr)
+library(dplyr)
+mlb_hitter_totals = read_csv("/Users/noahkornfeld/Desktop/hof_criteria/dataset_combination_code/final_datasets/hitters_combined.csv") %>% 
+  select(-BA)
+mlb_pitcher_totals = read_csv("/Users/noahkornfeld/Desktop/hof_criteria/dataset_combination_code/final_datasets/pitchers_final.csv")
+
+colnames(mlb_hitter_totals)
+```
+```{r}
+view(mlb_hitter_totals)
+view(mlb_pitcher_totals)
+```
+
+```{r}
+hitter_averages = mlb_hitter_totals %>% 
+  summarize(
+    games = mean(G),
+    plate_apps = mean(PA),
+    MVP = mean(MVP),
+    AS = mean(AS),
+    GG = mean(GG),
+    ROY = mean(ROY),
+    AB = mean(AB),
+    R = mean(R),
+    H = mean(H),
+    singles = mean(singles),
+    doubles = mean(doubles),
+    triples = mean(triples),
+    HR = mean(HR),
+    RBI = mean(RBI),
+    SB = mean(SB),
+    BB = mean(BB),
+    SO = mean(SO),
+    TB = mean(TB),
+    BA = mean(AVG),
+    OBP = mean(OBP),
+    SLG = mean(SLG),
+    OPS = mean(OPS),
+    OPS_plus = mean(OPS_plus)
+  )
+
+hitter_hof_averages = mlb_hitter_totals %>% 
+  filter(hof ==)
+  summarize(
+    games = mean(G),
+    plate_apps = mean(PA),
+    MVP = mean(MVP),
+    AS = mean(AS),
+    GG = mean(GG),
+    ROY = mean(ROY),
+    AB = mean(AB),
+    R = mean(R),
+    H = mean(H),
+    singles = mean(singles),
+    doubles = mean(doubles),
+    triples = mean(triples),
+    HR = mean(HR),
+    RBI = mean(RBI),
+    SB = mean(SB),
+    BB = mean(BB),
+    SO = mean(SO),
+    TB = mean(TB),
+    BA = mean(AVG),
+    OBP = mean(OBP),
+    SLG = mean(SLG),
+    OPS = mean(OPS),
+    OPS_plus = mean(OPS_plus)
+  )
+```
+

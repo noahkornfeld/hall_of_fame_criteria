@@ -1,0 +1,311 @@
+---
+title: "Hof_Criteria_Visualizations"
+output: html_document
+date: "2024-02-25"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(readr)
+library(tidyr)
+library(dplyr)
+nba_totals = read.csv("/Users/noahkornfeld/Desktop/hof_criteria/dataset_combination_code/final_datasets/nba_data_FINAL.csv")
+```
+
+```{r}
+nba_totals <- nba_totals %>%
+  mutate(pos = ifelse(pos == "C-F", "C", pos)) %>% 
+  mutate(pos = ifelse(pos == "C-PF", "C", pos)) %>% 
+  mutate(pos = ifelse(pos == "F-C", "F", pos)) %>% 
+  mutate(pos = ifelse(pos == "F-G", "F", pos)) %>% 
+  mutate(pos = ifelse(pos == "G-F", "G", pos)) %>% 
+  mutate(pos = ifelse(pos == "PF", "F", pos)) %>% 
+  mutate(pos = ifelse(pos == "PF-C", "F", pos)) %>%
+  mutate(pos = ifelse(pos == "PF-SF", "F", pos)) %>% 
+  mutate(pos = ifelse(pos == "PG", "G", pos)) %>% 
+  mutate(pos = ifelse(pos == "PG-SG", "G", pos)) %>% 
+  mutate(pos = ifelse(pos == "SF", "F", pos)) %>% 
+  mutate(pos = ifelse(pos == "SF-C", "F", pos)) %>% 
+  mutate(pos = ifelse(pos == "SF-PF", "F", pos)) %>% 
+  mutate(pos = ifelse(pos == "SF-SG", "F", pos)) %>% 
+  mutate(pos = ifelse(pos == "SG", "G", pos)) %>% 
+  mutate(pos = ifelse(pos == "SG-PG", "G", pos)) %>% 
+  mutate(pos = ifelse(pos == "SG-PG-SF", "G", pos)) %>% 
+  mutate(pos = ifelse(pos == "SG-SF", "G", pos)) %>% 
+  mutate(mvp = aba.mvp + nba.mvp ) %>% 
+  mutate(roy = aba.roy + nba.roy) %>%
+  select(-c(nba.mvp, aba.mvp, nba.roy, aba.roy, dpoy.1))
+```
+
+```{r}
+nba_average_stats = nba_totals %>% 
+  group_by(pos) %>% 
+  summarize(years_played = mean(experience),
+         mvps = mean(mvp),
+         championships = mean(championships),
+         finals_apps = mean(finals_appearances),
+         FMVPs = mean(fmvp),
+         allstars = mean(all.star.selections),
+         ROYs = mean(roy),
+         DPOYs = mean(dpoy),
+         SMOYs = mean(smoy),
+         games = mean(g),
+         starts = mean(gs),
+         minutes = mean(mp),
+         field_goals = mean(fg),
+         field_goal_attempts = mean(fga),
+         three_pointers_made = mean(x3p),
+         three_pointers_attempted = mean(x3pa),
+         two_pointers_made = mean(x2p),
+         two_pointers_attempted = mean(x2pa),
+         free_throws = mean(ft),
+         free_throw_attempts = mean(fta),
+         orebounds = mean(orb),
+         drebounds = mean(drb),
+         total_rebounds = mean(trb),
+         assists = mean(ast),
+         steals = mean(stl),
+         blocks = mean(blk),
+         turnovers = mean(tov),
+         fouls = mean(pf),
+         points = mean(pts),
+         mpg = mean(mpg),
+         fg_percent = mean(fg.),
+         three_point_percent = mean(X3p.),
+         two_point_percent = mean(X2p.),
+         ft_percent = mean(ft.),
+         rpg = mean(rpg),
+         apg = mean(apg),
+         spg = mean(spg),
+         bpg = mean(bpg),
+         tovpg = mean(tpg),
+         pfpg = mean(pfpg),
+         ppg = mean(ppg)
+         )
+nba_hof_stats = nba_totals %>% 
+  filter(hof == "yes") %>% 
+  group_by(pos) %>% 
+  summarize(years_played = mean(experience),
+         mvps = mean(mvp),
+         championships = mean(championships),
+         finals_apps = mean(finals_appearances),
+         FMVPs = mean(fmvp),
+         allstars = mean(all.star.selections),
+         ROYs = mean(roy),
+         DPOYs = mean(dpoy),
+         SMOYs = mean(smoy),
+         games = mean(g),
+         starts = mean(gs),
+         minutes = mean(mp),
+         field_goals = mean(fg),
+         field_goal_attempts = mean(fga),
+         three_pointers_made = mean(x3p),
+         three_pointers_attempted = mean(x3pa),
+         two_pointers_made = mean(x2p),
+         two_pointers_attempted = mean(x2pa),
+         free_throws = mean(ft),
+         free_throw_attempts = mean(fta),
+         orebounds = mean(orb),
+         drebounds = mean(drb),
+         total_rebounds = mean(trb),
+         assists = mean(ast),
+         steals = mean(stl),
+         blocks = mean(blk),
+         turnovers = mean(tov),
+         fouls = mean(pf),
+         points = mean(pts),
+         mpg = mean(mpg),
+         fg_percent = mean(fg.),
+         three_point_percent = mean(X3p.),
+         two_point_percent = mean(X2p.),
+         ft_percent = mean(ft.),
+         rpg = mean(rpg),
+         apg = mean(apg),
+         spg = mean(spg),
+         bpg = mean(bpg),
+         tovpg = mean(tpg),
+         pfpg = mean(pfpg),
+         ppg = mean(ppg)
+         )
+```
+
+```{r}
+nba_average_long <- pivot_longer(nba_average_stats, cols = -pos, names_to = "Statistic", values_to = "Value")
+nba_average_long$Group <- "NBA Average"
+
+nba_hof_long <- pivot_longer(nba_hof_stats, cols = -pos, names_to = "Statistic", values_to = "Value")
+nba_hof_long$Group <- "HOF"
+
+combined_data <- rbind(nba_average_long, nba_hof_long)
+```
+
+```{r}
+per_game_data = combined_data %>% 
+  filter(Statistic %in% c("ppg", "apg", "rpg",
+                          "spg", "bpg", "tovpg"))
+career_totals_data = combined_data %>% 
+  filter(Statistic %in% c("years_played", "starts",
+                          "games", "minutes",
+                          "field_goals", "three_pointers_made",
+                          "orebounds", "drebounds", "total_rebounds",
+                          "assists","steals", "blocks",
+                          "turnovers","points"))
+shooting_data = combined_data %>% 
+  filter(Statistic %in% c("fg_percent", "three_point_percent",
+                          "two_point_percent","ft_percent"))
+awards_data = combined_data %>% 
+  filter(Statistic %in% c("mvps", "championships",
+                          "finals_apps", "FMVPs",
+                          "allstars", "ROYs", "DPOYs", "SMOYS" ))
+```
+
+```{r}
+ggplot(per_game_data, aes(x = Statistic, y = Value, fill = Group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "NBA Hall of Famer Vs NBA Average Per Game Stats",
+       subtitle = "Organized by Position",
+       x = "Per Game Statistic",
+       y = "Mean Value",
+       fill = "Group") +
+  geom_text(aes(label = sprintf("%.2f", Value), 
+                y = Value + 0.5), 
+            position = position_dodge(width = 0.9),
+            vjust = 0,
+            color = "black",
+            size = 2.5) +
+  scale_fill_brewer(palette = "Set1") +
+  facet_wrap(~pos, scales = "free_x", ncol = 1)
+
+```
+
+```{r}
+ggplot(career_totals_data, aes(x = Statistic, y = Value, fill = Group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "NBA Hall of Famer Vs NBA Average Career Totals",
+       subtitle = "Organized by Position",
+       x = "Career Stats",
+       y = "Mean Value",
+       fill = "Group") +
+  geom_text(aes(label = sprintf("%.2f", Value), 
+                y = Value + 0.5), 
+             position = position_dodge(width = 0.9),
+             vjust = -0.5,
+             color = "black",
+             size = 2.5) +
+  scale_fill_brewer(palette = "Set1") + 
+  facet_wrap(~pos, scales = "free_x", ncol = 1)
+
+```
+
+```{r}
+ggplot(shooting_data, aes(x = Statistic, y = Value, fill = Group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "NBA Hall of Famer Vs NBA Average Shooting Stats",
+       x = "Shootings Stats",
+       y = "Mean Value",
+       fill = "Group") +
+  geom_text(aes(label = sprintf("%.2f", Value), 
+                y = Value + 0.5), 
+             position = position_dodge(width = 0.9),
+             vjust = 0,
+             color = "black",
+             size = 1.5) +
+  scale_fill_brewer(palette = "Set1") +
+  facet_wrap(~pos, scales = "free_x", ncol = 1)
+
+```
+
+```{r}
+ggplot(awards_data, aes(x = Statistic, y = Value, fill = Group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "NBA Hall of Famer Vs NBA Average Awards",
+       subtitle = "Organized by Position",
+       x = "Award",
+       y = "Mean Value",
+       fill = "Group") +
+  geom_text(aes(label = sprintf("%.2f", Value), 
+                y = Value + 0.5), 
+             position = position_dodge(width = 0.9),
+             vjust = 0,
+             color = "black",
+             size = 1.5) +
+  scale_fill_brewer(palette = "Set1") + 
+  facet_wrap(~pos, scales = "free_x", ncol = 1)
+
+```
+
+```{r}
+hof_predictions_awards = nba_totals %>%
+  group_by(hof) %>% 
+  filter(hof != "yes") %>%
+  filter(all.star.selections >= 5,
+         championships >= 1,
+         finals_appearances >= 2) %>% 
+  arrange(desc(hof)) %>% 
+  print()
+```
+
+```{r}
+hof_predictions_counting_stats = nba_totals %>% 
+  group_by(hof) %>% 
+  filter(hof != "yes") %>% 
+  filter(g > 300,
+         mp > 30000,
+         experience > 10,
+         gs > 350,
+         pts > 16000
+         ) %>% 
+  filter(
+    (pos == "G" & ast > 5000 & fg > 6000  & stl > 800 & x3p > 400 & trb > 3000) | 
+      (pos == "F" & ast > 2500 & blk > 400 & drb > 3000 & fg > 6000  & stl > 700 & x3p > 200 & trb > 7000) |
+    (pos == "C" & blk > 1000 & drb > 5000 & fg > 6000  & orb > 2000 &  trb > 10000)  
+      ) %>% 
+  arrange(desc(hof)) %>% 
+  print()
+```
+
+```{r}
+hof_predictions_per_game_stats = nba_totals %>%
+  group_by(hof) %>% 
+  filter(hof != "yes") %>% 
+ filter(
+    (pos == "G" & apg > 5 & ppg > 16  & spg > 0.5 & rpg > 3 & bpg > 0.1) | 
+      (pos == "F" & apg > 3 & bpg > 0.2 & rpg > 7.5 & ppg > 18  & spg > 0.5 ) |
+    (pos == "C" & apg > 2 & bpg > 1 & ppg > 16  & rpg > 10 &  spg > 0.5)  
+      ) %>% 
+  arrange(desc(hof)) %>% 
+  print()
+```
+
+```{r}
+model_data <- nba_totals %>%
+  filter(hof != "active")
+
+model_data$hof <- ifelse(model_data$hof == "yes", 1, 0)
+
+awards_model <- glm(hof ~ championships + mvp + all.star.selections + dpoy + finals_appearances, 
+                 data = model_data, family = binomial)
+
+summary_hof <- summary(awards_model)
+print(summary_hof)
+
+coefficients <- coef(awards_model)
+percentage_changes <- exp(coefficients) - 1
+percentage_changes <- percentage_changes * 100
+print(percentage_changes)
+
+```
+
+
+ 
+   
+
